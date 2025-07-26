@@ -24,6 +24,19 @@ def scan_content(url, keyword):
 
     return matched_sentences
 
+@app.route('/gan', methods=['POST'])
+def simulateGan():
+    data = request.json
+    url = data.get("domain")
+
+    random_suffix = ''.join(random.choices(string.ascii_lowercase + string.digits, k=4))
+    generated_domain = url + random_suffix
+
+    return jsonify({
+        "generatedDomain": generated_domain,
+        "msg": "only mockup",
+    })
+
 @app.route('/scan', methods=['POST'])
 def scan():
     data = request.json
