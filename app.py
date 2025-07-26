@@ -2,10 +2,16 @@ from flask import Flask, request, jsonify
 from selenium.webdriver.common.by import By
 from seleniumbase import Driver
 import time
+import random
+import string
 
 app = Flask(__name__)
 
+import time
+import logging
+
 def scan_content(url, keyword):
+    start_time = time.time()
     print(f"Scanning URL: {url} for keyword: '{keyword}'")
     driver = Driver(uc=True, headless=True)
     driver.get(url)
@@ -19,6 +25,9 @@ def scan_content(url, keyword):
 
     driver.quit()
 
+    end_time = time.time()
+    logging.info(f"Scanning took {end_time - start_time} seconds")
+
     sentences = full_text.split('\n')
     matched_sentences = [s.strip() for s in sentences if keyword.lower() in s]
 
@@ -26,16 +35,30 @@ def scan_content(url, keyword):
 
 @app.route('/gan', methods=['POST'])
 def simulateGan():
+    # Mengambil data domain dari request JSON
     data = request.json
     url = data.get("domain")
 
+    # Validasi: jika 'domain' tidak diberikan
+    if not url:
+        return jsonify({
+            "error": "Domain tidak ditemukan. Pastikan Anda mengirimkan 'domain' dalam body request."
+        }), 400
+
+    # Membuat random suffix dengan panjang 4 karakter
     random_suffix = ''.join(random.choices(string.ascii_lowercase + string.digits, k=4))
+
+    # Menggabungkan domain dengan random suffix
     generated_domain = url + random_suffix
 
     return jsonify({
         "generatedDomain": generated_domain,
-        "msg": "only mockup",
+        "msg": "Hanya mockup. Domain dihasilkan secara acak."
     })
+
+if __name__ == '__main__':
+    app.run(debug=True)
+
 
 @app.route('/scan', methods=['POST'])
 def scan():
